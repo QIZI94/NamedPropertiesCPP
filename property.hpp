@@ -113,7 +113,7 @@ public: // member functions
 	void write(const any_type& entry) const{m_write(entry);}
 	bool isReadOnly() const{ return (m_write == nullptr);}
 	bool isWriteOnly() const{ return (m_read == nullptr);}
-	bool isNameOnly() const{return (!isReadOnly() && !isReadOnly());}
+	bool isNameOnly() const{return (isWriteOnly() && isReadOnly());}
 
 private: // members
 	const typename interface::string_type m_name;
