@@ -143,8 +143,8 @@ int main(){
         }
         std::cout<<"Writting new value to: [" <<property.name()<<"]\n";
         
-            property.write(value);
-        }
+        property.write(value);
+        
 
         return true;
         

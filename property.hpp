@@ -33,6 +33,8 @@ struct DefaultInterface{
 	static T& cast_any(any_type& any){
 			return std::any_cast<T&>(any);
 	}
+
+    DefaultInterface() = delete;
 };
 }
 
@@ -103,7 +105,7 @@ public: // member functions
 	), 
 	m_write(
 		[&member](const typename interface::any_type& entry){
-			member = interface:: template cast_any<T>(entry);
+            member = interface:: template cast_any<T>(entry);
 		}
 	) 
 	{}
@@ -116,7 +118,7 @@ public: // member functions
 	bool isNameOnly() const{return (isWriteOnly() && isReadOnly());}
 
 private: // members
-	const typename interface::string_type m_name;
+	const string_type m_name;
 	const ReadFunction m_read;
 	const WriteFunction m_write;
 };
