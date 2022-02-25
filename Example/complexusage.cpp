@@ -100,8 +100,6 @@ int main(){
         
     });
 
-    simpleClass.propertiesFunc(readingVisitor);
-    std::cout<<"\n<------------------------------------->\n\n";
 
     unip::Property::Visitor writingVisitor(
         [](const unip::Property& property){
@@ -150,9 +148,11 @@ int main(){
         
     });
 
-    simpleClass.propertiesFunc(writingVisitor);
+    simpleClass.propertiesFunc(readingVisitor);
     std::cout<<"\n<------------------------------------->\n\n";
 
+    simpleClass.propertiesFunc(writingVisitor);
+    std::cout<<"\n<------------------------------------->\n\n";
 
     simpleClass.propertiesFunc(readingVisitor);
 
