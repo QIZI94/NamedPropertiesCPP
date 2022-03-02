@@ -31,8 +31,12 @@ struct DefaultInterface{
 	}
 	template<typename T>
 	static T& cast_any(any_type& any){
-			return std::any_cast<T&>(any);
+		return std::any_cast<T&>(any);
 	}
+    template<typename T>
+    static bool is_any(const any_type& any){
+        return (any.type() == typeid(T));
+    }
 
     DefaultInterface() = delete;
 };
@@ -79,18 +83,45 @@ public: //type definitions
 	using interface     = InterfaceImpl;
 	using string_type   = typename interface::string_type;
 	using any_type      = typename interface::any_type;
+    
+public: // static functions
+    // wrapers
+    template<typename T>
+	static auto make_any(T value){
+		return interface::template make_any(value);
+	}
+	template<typename T>
+	static auto cast_any(const any_type& any){
+		return interface::template cast_any<T>(any);
+	}
+	template<typename T>
+	static auto cast_any(any_type& any){
+		return interface::template cast_any<T>(any);
+	}
+    template<typename T>
+    static bool is_any(const any_type& any){
+        return interface::template is_any<T>(any);
+    }
+
+    // helpers
+    template<class Callable, class... Args>
+    static void ExecWhenNotConst(const Callable& callable, Args&... args){
+        callable(std::forward<Args>(args)...);
+    }
+    template<class Callable, class... Args>
+    static void ExecWhenNotConst(const Callable&, const Args&...){}
 
 public: // member functions
 	PropertyTemplate(string_type name, const ReadFunction& readFunc, const WriteFunction& writeFunc) : m_name(name), m_read(readFunc), m_write(writeFunc) {}
 	PropertyTemplate(string_type name, const ReadFunction& readFunc) : m_name(name), m_read(readFunc), m_write(nullptr) {}
 	PropertyTemplate(string_type name, const WriteFunction& writeFunc) : m_name(name), m_read(nullptr), m_write(writeFunc) {}
 	PropertyTemplate(string_type name) : m_name(name), m_read(nullptr), m_write(nullptr) {}
-
+    
 	template<typename T>
 	PropertyTemplate(string_type name, const T& constMember) : m_name(name),
 	m_read(
 		[&constMember](typename interface::any_type& entry){
-			entry = interface:: template make_any<T>(constMember);
+			entry = make_any<T>(constMember);
 		}
 	), 
 	m_write({})
@@ -100,16 +131,16 @@ public: // member functions
 	PropertyTemplate(string_type name, T& member) : m_name(name), 
 	m_read(
 		[&member](typename interface::any_type& entry){
-			entry = interface:: template make_any<T>(member);
+			entry = make_any<T>(member);
 		}
 	), 
 	m_write(
 		[&member](const typename interface::any_type& entry){
-            member = interface:: template cast_any<T>(entry);
+            member = cast_any<T>(entry);
 		}
 	) 
 	{}
-
+ 
 	const string_type& name() const{return m_name;}
 	void read(any_type& entry) const{m_read(entry);}
 	void write(const any_type& entry) const{m_write(entry);}

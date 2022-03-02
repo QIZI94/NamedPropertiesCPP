@@ -6,6 +6,9 @@
 #define PROPERTIES(...) \
 void propertiesFunc(const unip::Property::Visitor& visitor){\
 using namespace unip;\
+Property::Visitor::visit(visitor,{__VA_ARGS__});}\
+void propertiesFuncConst(const unip::Property::Visitor& visitor) const{\
+using namespace unip;\
 Property::Visitor::visit(visitor,{__VA_ARGS__});}
 
 using Range = std::pair<long long, long long>;
@@ -19,15 +22,19 @@ class SimpleClass{
         Property("d", d),
         Property("Complex types"),
         Property("Range", range),
-        Property("Limited Range", 
+        Property("Limited Range",
             // read function
             [this](Property::any_type& output){
                 output = Property::interface::make_any<const Range&>(limitedRange);
             },
             // write function
             [this](const Property::any_type& input){
-                const Range& newRange = Property::interface::cast_any<const Range&>(input);
-                setLimitedRange(newRange.first, newRange.second);
+                Property::ExecWhenNotConst([](const unip::Property::any_type& input, SimpleClass* This){
+                        const Range& newRange = Property::interface::cast_any<const Range&>(input);
+                        This->setLimitedRange(newRange.first, newRange.second);
+                    },
+                    input ,this
+                );
             }
         ),
         Property("Class Name", className),
@@ -59,8 +66,8 @@ int main(){
 
     unip::Property::Visitor readingVisitor(
         [](const unip::Property& property){
+        using namespace unip;
         using any_t = unip::Property::any_type;
-        using impl = unip::Property::interface;
         if(property.isNameOnly()){
             std::cout<<"[Category] "<<property.name()<<":\n";
             return true;
@@ -75,24 +82,24 @@ int main(){
 
         unip::Property::string_type propName = property.name();
 
-        if(value.type() == typeid(char)){
-            std::cout<<"\tValue["<<propName<<"]: "<<impl::cast_any<char>(value)<<'\n';
+        if(Property::is_any<char>(value)){
+            std::cout<<"\tValue["<<propName<<"]: "<<unip::Property::cast_any<char>(value)<<'\n';
         }
-        else if(value.type() == typeid(short)){
-            std::cout<<"\tValue["<<propName<<"]: "<<std::hex<<"0x"<<impl::cast_any<short>(value)<<'\n';
+        else if(Property::is_any<short>(value)){
+            std::cout<<"\tValue["<<propName<<"]: "<<std::hex<<"0x"<<Property::cast_any<short>(value)<<'\n';
         }
-        else if(value.type() == typeid(int)){
-            std::cout<<"\tValue["<<propName<<"]: "<<std::dec <<impl::cast_any<int>(value)<<'\n';
+        else if(Property::is_any<int>(value)){
+            std::cout<<"\tValue["<<propName<<"]: "<<std::dec <<Property::cast_any<int>(value)<<'\n';
         }
-        else if(value.type() == typeid(float)){
-            std::cout<<"\tValue["<<propName<<"]: "<<impl::cast_any<float>(value)<<'\n';
+        else if(Property::is_any<float>(value)){
+            std::cout<<"\tValue["<<propName<<"]: "<<Property::cast_any<float>(value)<<'\n';
         }
-        else if(value.type() == typeid(Range)){
-            const Range& range = impl::cast_any<const Range&>(value);
+        else if(Property::is_any<Range>(value)){
+            const Range& range = Property::cast_any<const Range&>(value);
             std::cout<<"\tValue["<<propName<<"]: {"<< range.first<<", "<<range.second<<"}\n";
         }
-        else if(value.type() == typeid(std::string)){
-            const std::string& className = impl::cast_any<const std::string&>(value);
+        else if(Property::is_any<std::string>(value)){
+            const std::string& className = Property::cast_any<const std::string&>(value);
             std::cout<<"\tValue["<<propName<<"]: "<<className<<'\n';
         }
 
@@ -103,8 +110,9 @@ int main(){
 
     unip::Property::Visitor writingVisitor(
         [](const unip::Property& property){
-        using any_t = unip::Property::any_type;
-        using impl = unip::Property::interface;
+        using namespace unip;
+        using any_t = Property::any_type;
+
         if(property.isNameOnly()){
             return true;
         }
@@ -120,23 +128,23 @@ int main(){
         
         auto range = Range(-20000,30000);
 
-        if(value.type() == typeid(char)){
+        if(Property::is_any<char>(value)){
             value = 'A';
         }
-        else if(value.type() == typeid(short)){
+        else if(Property::is_any<short>(value)){
             value = (short)0x4321;
         }
-        else if(value.type() == typeid(int)){
+        else if(Property::is_any<int>(value)){
             value = (int)+1;
         }
-        else if(value.type() == typeid(float)){
+        else if(Property::is_any<float>(value)){
             value = (float)3.14/2;
         }
-        else if(value.type() == typeid(Range)){
+        else if(Property::is_any<Range>(value)){
             value = (const Range&)range;
         }
-        else if(value.type() == typeid(std::string)){
-            const std::string& className = impl::cast_any<const std::string&>(value);
+        else if(Property::is_any<std::string>(value)){
+            const std::string& className = Property::cast_any<const std::string&>(value);
             value = std::string("Changed ")+className;            
         }
         std::cout<<"Writting new value to: [" <<property.name()<<"]\n";

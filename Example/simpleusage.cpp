@@ -8,13 +8,16 @@
 #define PROPERTIES(...) \
 void propertiesFunc(const unip::Property::Visitor& visitor){\
 using namespace unip;\
+Property::Visitor::visit(visitor,{__VA_ARGS__});}\
+void propertiesFuncConst(const unip::Property::Visitor& visitor) const{\
+using namespace unip;\
 Property::Visitor::visit(visitor,{__VA_ARGS__});}
 
 
 
 void PropertyToString(const unip::Property& property, std::string& output){
-
-    unip::Property::string_type propName = property.name();
+    using namespace unip;
+    Property::string_type propName = property.name();
     output.append(propName);
 
     if(property.isNameOnly()){
@@ -23,26 +26,27 @@ void PropertyToString(const unip::Property& property, std::string& output){
         return;
     }
 
-    unip::Property::any_type value;
+    Property::any_type value;
     property.read(value);
 
-    if(value.type() == typeid(int)){
+    if(Property::is_any<int>(value)){
         output.append(": ");
-        output.append(std::to_string(unip::Property::interface::cast_any<int>(value)));
+        output.append(std::to_string(Property::cast_any<int>(value)));
     }
-    else if(value.type() == typeid(float)){
+    else if(Property::is_any<float>(value)){
         output.append(": ");
-        output.append(std::to_string(unip::Property::interface::cast_any<float>(value)));
+        output.append(std::to_string(Property::cast_any<float>(value)));
     }
-    else if(value.type() == typeid(std::string_view)){
+    else if(Property::is_any<std::string_view>(value)){
         output.append(": ");
-        output.append(unip::Property::interface::cast_any<std::string_view>(value));
+        output.append(Property::cast_any<std::string_view>(value));
     }
 
     output.append(", ");
 }
 
 bool SerializeFromString(const unip::Property& property, std::string_view& input){
+    using namespace unip;
     auto itCurrent = input.begin();
     auto itEnd = input.end();
 
@@ -70,19 +74,19 @@ bool SerializeFromString(const unip::Property& property, std::string_view& input
         unip::Property::any_type value;
         property.read(value);
 
-        if(value.type() == typeid(int)){
+        if(Property::is_any<int>(value)){
             
             int i = std::stoi(s_value);
             value = i;
             property.write(value);
         }
-        else if(value.type() == typeid(float)){
+        else if(Property::is_any<float>(value)){
             float f = std::stof(s_value);
             value = f;
             property.write(value);
         }
-       else if(value.type() == typeid(std::string_view)){
-            auto s_propVal = unip::Property::interface::cast_any<std::string_view>(value);
+       else if(Property::is_any<std::string_view>(value)){
+            auto s_propVal = Property::cast_any<std::string_view>(value);
             
             if(s_propVal != s_value)
             {
@@ -126,7 +130,7 @@ class Point{
 
     }
 
-    std::string toString(){
+    std::string toString() const{
         std::string ret;
         unip::Property::Visitor toStringVisitor(
             [&ret](const unip::Property& property){
@@ -134,7 +138,7 @@ class Point{
                 return true;
             }
         );
-        propertiesFunc(toStringVisitor);
+        propertiesFuncConst(toStringVisitor);
 
         return ret;
     }
@@ -165,7 +169,7 @@ class Pointf{
         propertiesFunc(serializationVisitor);
     }
 
-    std::string toString(){
+    std::string toString() const{
         std::string ret;
         unip::Property::Visitor toStringVisitor(
             [&ret](const unip::Property& property){
@@ -173,7 +177,7 @@ class Pointf{
                 return true;
             }
         );
-        propertiesFunc(toStringVisitor);
+        propertiesFuncConst(toStringVisitor);
 
         return ret;
     }
