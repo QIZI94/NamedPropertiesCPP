@@ -144,9 +144,9 @@ public: // member functions
 	const string_type& name() const{return m_name;}
 	void read(any_type& entry) const{m_read(entry);}
 	void write(const any_type& entry) const{m_write(entry);}
-	bool isReadOnly() const{ return (m_write == nullptr);}
-	bool isWriteOnly() const{ return (m_read == nullptr);}
-	bool isNameOnly() const{return (isWriteOnly() && isReadOnly());}
+	bool isReadable() const{ return (m_read != nullptr);}
+	bool isWritable() const{ return (m_write != nullptr);}
+	bool isNameOnly() const{return (!isReadable() && !isWritable());}
 
 private: // members
 	const string_type m_name;

@@ -72,7 +72,7 @@ int main(){
             std::cout<<"[Category] "<<property.name()<<":\n";
             return true;
         }
-        if(property.isWriteOnly()){
+        if(!property.isReadable()){
             return true;
         }
         any_t value;
@@ -116,13 +116,13 @@ int main(){
         if(property.isNameOnly()){
             return true;
         }
-        if(property.isReadOnly()){
+        if(!property.isWritable()){
            return true; 
         }
         
         any_t value;
         // read into value
-        if(!property.isWriteOnly()){
+        if(property.isReadable()){
             property.read(value);
         }
         
