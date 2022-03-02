@@ -9,8 +9,9 @@ namespace unip{
 
 namespace detail{
 struct DefaultInterface{
-	using any_type = std::any;
-	using string_type = std::string_view;
+	using any_type          = std::any;
+	using string_type       = std::string_view;
+    using string_type_ref   = std::string_view;
 	template<typename T>
 	static any_type make_any(T value){
 		if constexpr(sizeof(T) > sizeof(void*)){
@@ -77,12 +78,13 @@ public: //type definitions
 		const PropertyVisitFunc m_visitProperty;
 	};
 
-	using WriteFunction = std::function<void(const std::any& entry)>;
-	using ReadFunction  = std::function<void(std::any& entry)>;
+	using WriteFunction     = std::function<void(const std::any& entry)>;
+	using ReadFunction      = std::function<void(std::any& entry)>;
 	
-	using interface     = InterfaceImpl;
-	using string_type   = typename interface::string_type;
-	using any_type      = typename interface::any_type;
+	using interface         = InterfaceImpl;
+	using string_type       = typename interface::string_type;
+    using string_type_ref   = typename interface::string_type_ref;
+	using any_type          = typename interface::any_type;
     
 public: // static functions
     // wrapers
@@ -141,7 +143,7 @@ public: // member functions
 	) 
 	{}
  
-	const string_type& name() const{return m_name;}
+	const string_type_ref name() const{return m_name;}
 	void read(any_type& entry) const{m_read(entry);}
 	void write(const any_type& entry) const{m_write(entry);}
 	bool isReadable() const{ return (m_read != nullptr);}
@@ -149,7 +151,7 @@ public: // member functions
 	bool isNameOnly() const{return (!isReadable() && !isWritable());}
 
 private: // members
-	const string_type m_name;
+	const string_type_ref m_name;
 	const ReadFunction m_read;
 	const WriteFunction m_write;
 };
