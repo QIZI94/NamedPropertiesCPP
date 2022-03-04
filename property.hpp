@@ -118,7 +118,26 @@ public: // member functions
 	PropertyTemplate(string_type name, const ReadFunction& readFunc) : m_name(name), m_read(readFunc), m_write(nullptr) {}
 	PropertyTemplate(string_type name, const WriteFunction& writeFunc) : m_name(name), m_read(nullptr), m_write(writeFunc) {}
 	PropertyTemplate(string_type name) : m_name(name), m_read(nullptr), m_write(nullptr) {}
-    
+
+    template<typename T>
+    PropertyTemplate(string_type name, T& member, const ReadFunction& readFunc) : m_name(name),
+    m_read(readFunc),
+    m_write(
+        [&member](const typename interface::any_type& entry){
+            member = cast_any<T>(entry);
+		}
+    )
+    {}
+	template<typename T>
+    PropertyTemplate(string_type name, T& member, const WriteFunction& writeFunc) : m_name(name),
+    m_read(
+        [&member](typename interface::any_type& entry){
+			entry = make_any<T>(member);
+		}
+    ),
+    m_write(writeFunc)
+    {}
+
 	template<typename T>
 	PropertyTemplate(string_type name, const T& constMember) : m_name(name),
 	m_read(
