@@ -29,11 +29,11 @@ class SimpleClass{
             },
             // write function
             [this](const Property::any_type& input){
-                Property::ExecWhenNotConst([](const unip::Property::any_type& input, SimpleClass* This){
-                        const Range& newRange = Property::interface::cast_any<const Range&>(input);
+                Property::ExecWhenNotConst([&input](SimpleClass* This){
+                        const Range& newRange = Property::cast_any<const Range&>(input);
                         This->setLimitedRange(newRange.first, newRange.second);
                     },
-                    input ,this
+                   this
                 );
             }
         ),
@@ -140,12 +140,15 @@ int main(){
         else if(Property::is_any<float>(value)){
             value = (float)3.14/2;
         }
-        else if(Property::is_any<Range>(value)){
-            value = (const Range&)range;
+        else if(Property::is_any<const Range>(value)){
+            value = Property::make_any<const Range&>(range);
         }
         else if(Property::is_any<std::string>(value)){
             const std::string& className = Property::cast_any<const std::string&>(value);
-            value = std::string("Changed ")+className;            
+            auto newVal = std::string("Changed ")+className;            
+            value = Property::make_any<const std::string&>(newVal);       
+            property.write(value);
+            return true;
         }
         std::cout<<"Writting new value to: [" <<property.name()<<"]\n";
         

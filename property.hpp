@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
-******************************************************************************/
+ *****************************************************************************/
 
 #pragma once
 
@@ -30,20 +30,30 @@
 namespace unip{
 
 namespace detail{
+
+template <typename T>
+inline constexpr bool is_const = std::is_const_v<typename std::remove_pointer<typename std::remove_reference<T>::type>::type>;
+
+template <typename... Args> 
+struct are_const{
+  static constexpr bool value {(is_const<Args> || ...)};
+};
+
 /**
  * Default implementation of interface which uses C++17 std::any
  *  and tries to use references for objects which sizes are greater than a pointer,
  *  taking advantage of small object optimization of std::any.
  **/
-
 struct DefaultInterface{
 	using any_type          = std::any;
 	using string_type       = std::string_view;
 	using string_type_ref   = std::string_view;
 	template<typename T>
-	static any_type make_any(T value){
-		if constexpr(sizeof(T) > sizeof(void*)){
-			return std::make_any<const T&>(value);
+	static any_type make_any(const T& value){
+        using type = std::remove_reference_t<T>;
+		if constexpr(sizeof(type) > sizeof(void*)){
+            
+			return std::make_any<const type*>(&value);
 		}
 		else{
 			return std::make_any<T>(value);
@@ -51,20 +61,23 @@ struct DefaultInterface{
 	}
 	template<typename T>
 	static auto cast_any(const any_type& any){
+        using type = std::remove_reference_t<T>;
 		if constexpr(sizeof(T) > sizeof(void*)){
-			return std::any_cast<const T&>(any);
+            return *std::any_cast<const type*>(any);
 		}
 		else{
 			return std::any_cast<T>(any);
 		}
 	}
 	template<typename T>
-	static T& cast_any(any_type& any){
-		return std::any_cast<T&>(any);
-	}
-	template<typename T>
 	static bool is_any(const any_type& any){
-		return (any.type() == typeid(T));
+        using type = std::remove_reference_t<T>;
+        if constexpr(sizeof(type) > sizeof(void*)){
+            return (any.type() == typeid(const type*));
+		}
+		else{
+			return (any.type() == typeid(type));
+		}
 	}
 
 	DefaultInterface() = delete;
@@ -168,9 +181,10 @@ public: // static functions
 	 * @param value passes value to interface implementation of make_any.
 	 * @return value of interface implementation of make_any
 	 **/
-	static auto make_any(T value){
+	static auto make_any(const T& value){
 		return interface::template make_any(value);
 	}
+
 	template<typename T>
 	/**
 	 * Wraper function which wraps interface's implementation of cast_any.
@@ -182,7 +196,8 @@ public: // static functions
 	static auto cast_any(const any_type& any){
 		return interface::template cast_any<T>(any);
 	}
-	template<typename T>
+
+	//template<typename T>
 	/**
 	 * Wraper function which wraps interface's implementation of cast_any.
 	 * 
@@ -190,9 +205,9 @@ public: // static functions
 	 *  as an agument for interface implementation of cast_any.
 	 * @return value of interface implementation of cast_any
 	 **/
-	static auto cast_any(any_type& any){
+	/*static auto cast_any(any_type& any){
 		return interface::template cast_any<T>(any);
-	}
+	}*/
 	template<typename T>
 	/**
 	 * Wraper function which wraps interface's implementation of is_any.
@@ -214,15 +229,11 @@ public: // static functions
 	 * @param callable functor to be executed.
 	 * @param args arguments that will be passed to the functor.
 	 **/
-	static void ExecWhenNotConst(const Callable& callable, Args&... args){
-		callable(std::forward<Args>(args)...);
-	}
-	/**
-	 * Helper function which does not executes callable functor,
-	 *  when in cont context.
-	 **/
-	template<class Callable, class... Args>
-	static void ExecWhenNotConst(const Callable&, const Args&...){}
+    static void ExecWhenNotConst(Callable callable, Args... args){
+        if constexpr(!detail::are_const<Args...>::value){
+            callable(std::forward<Args>(args) ...);
+        }
+    }
 
 	template<typename T>
 	/**
