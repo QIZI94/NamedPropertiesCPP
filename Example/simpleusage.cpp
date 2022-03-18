@@ -39,7 +39,7 @@ void PropertyToString(const unip::Property& property, std::string& output){
     }
     else if(Property::is_any<std::string_view>(value)){
         output.append(": ");
-        output.append(Property::cast_any<std::string_view>(value));
+        output.append(Property::cast_any<const std::string_view&>(value));
     }
 
     output.append(", ");
@@ -86,7 +86,7 @@ bool SerializeFromString(const unip::Property& property, std::string_view& input
             property.write(value);
         }
        else if(Property::is_any<std::string_view>(value)){
-            auto s_propVal = Property::cast_any<std::string_view>(value);
+            auto s_propVal = Property::cast_any<const std::string_view&>(value);
             
             if(s_propVal != s_value)
             {

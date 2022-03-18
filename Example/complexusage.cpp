@@ -28,9 +28,9 @@ class SimpleClass{
                 output = Property::interface::make_any<const Range&>(limitedRange);
             },
             // write function
-            [this](const Property::any_type& input){
+            [this](Property::any_type& input){
                 Property::ExecWhenNotConst([&input](SimpleClass* This){
-                        const Range& newRange = Property::cast_any<const Range&>(input);
+                        const Range& newRange = Property::cast_any<Range&>(input);
                         This->setLimitedRange(newRange.first, newRange.second);
                     },
                    this
@@ -75,10 +75,11 @@ int main(){
         if(!property.isReadable()){
             return true;
         }
-        any_t value;
         
         // read into value
-        property.read(value);
+        any_t v;
+        property.read(v);
+        const any_t& value = v;
 
         unip::Property::string_type propName = property.name();
 
@@ -94,11 +95,11 @@ int main(){
         else if(Property::is_any<float>(value)){
             std::cout<<"\tValue["<<propName<<"]: "<<Property::cast_any<float>(value)<<'\n';
         }
-        else if(Property::is_any<Range>(value)){
+        else if(Property::is_any<const Range&>(value)){
             const Range& range = Property::cast_any<const Range&>(value);
             std::cout<<"\tValue["<<propName<<"]: {"<< range.first<<", "<<range.second<<"}\n";
         }
-        else if(Property::is_any<std::string>(value)){
+        else if(Property::is_any<const std::string&>(value)){
             const std::string& className = Property::cast_any<const std::string&>(value);
             std::cout<<"\tValue["<<propName<<"]: "<<className<<'\n';
         }
@@ -141,12 +142,12 @@ int main(){
             value = (float)3.14/2;
         }
         else if(Property::is_any<const Range>(value)){
-            value = Property::make_any<const Range&>(range);
+            value = Property::make_any<Range&>(range);
         }
         else if(Property::is_any<std::string>(value)){
             const std::string& className = Property::cast_any<const std::string&>(value);
             auto newVal = std::string("Changed ")+className;            
-            value = Property::make_any<const std::string&>(newVal);       
+            value = Property::make_any<std::string&>(newVal);       
             property.write(value);
             return true;
         }

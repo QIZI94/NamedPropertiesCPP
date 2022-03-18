@@ -59,11 +59,33 @@ struct DefaultInterface{
 			return std::make_any<T>(value);
 		}
 	}
+    template<typename T>
+	static any_type make_any(T& value){
+        using type = std::remove_reference_t<T>;
+		if constexpr(sizeof(type) > sizeof(void*)){
+            
+			return std::make_any<type*>(&value);
+		}
+		else{
+			return std::make_any<T>(value);
+		}
+	}
+
 	template<typename T>
 	static auto cast_any(const any_type& any){
         using type = std::remove_reference_t<T>;
 		if constexpr(sizeof(T) > sizeof(void*)){
             return *std::any_cast<const type*>(any);
+		}
+		else{
+			return std::any_cast<T>(any);
+		}
+	}
+    template<typename T>
+	static auto cast_any(any_type& any){
+        using type = std::remove_reference_t<T>;
+		if constexpr(sizeof(T) > sizeof(void*)){
+            return std::move(*std::any_cast<type*>(any));
 		}
 		else{
 			return std::any_cast<T>(any);
@@ -164,7 +186,7 @@ public: //type definitions
 		const PropertyVisitFunc m_visitProperty;
 	};
 
-	using WriteFunction     = std::function<void(const std::any& entry)>;
+	using WriteFunction     = std::function<void(std::any& entry)>;
 	using ReadFunction      = std::function<void(std::any& entry)>;
 	
 	using interface         = InterfaceImpl;
@@ -184,6 +206,16 @@ public: // static functions
 	static auto make_any(const T& value){
 		return interface::template make_any(value);
 	}
+    template<typename T>
+	/**
+	 * Wraper function which wraps interface's implementation of make_any.
+	 * 
+	 * @param value passes value to interface implementation of make_any.
+	 * @return value of interface implementation of make_any
+	 **/
+	static auto make_any(T& value){
+		return interface::template make_any(value);
+	}
 
 	template<typename T>
 	/**
@@ -197,7 +229,7 @@ public: // static functions
 		return interface::template cast_any<T>(any);
 	}
 
-	//template<typename T>
+	template<typename T>
 	/**
 	 * Wraper function which wraps interface's implementation of cast_any.
 	 * 
@@ -205,9 +237,9 @@ public: // static functions
 	 *  as an agument for interface implementation of cast_any.
 	 * @return value of interface implementation of cast_any
 	 **/
-	/*static auto cast_any(any_type& any){
+	static auto cast_any(any_type& any){
 		return interface::template cast_any<T>(any);
-	}*/
+	}
 	template<typename T>
 	/**
 	 * Wraper function which wraps interface's implementation of is_any.
@@ -249,28 +281,7 @@ public: // static functions
 
 public: // member functions
 	PropertyTemplate(string_type name, const ReadFunction& readFunc, const WriteFunction& writeFunc) : m_name(name), m_read(readFunc), m_write(writeFunc) {}
-	PropertyTemplate(string_type name, const ReadFunction& readFunc) : m_name(name), m_read(readFunc), m_write(nullptr) {}
-	PropertyTemplate(string_type name, const WriteFunction& writeFunc) : m_name(name), m_read(nullptr), m_write(writeFunc) {}
 	PropertyTemplate(string_type name) : m_name(name), m_read(nullptr), m_write(nullptr) {}
-
-	template<typename T>
-	PropertyTemplate(string_type name, T& member, const ReadFunction& readFunc) : m_name(name),
-	m_read(readFunc),
-	m_write(
-		[&member](const typename interface::any_type& entry){
-			member = cast_any<T>(entry);
-		}
-	)
-	{}
-	template<typename T>
-	PropertyTemplate(string_type name, T& member, const WriteFunction& writeFunc) : m_name(name),
-	m_read(
-		[&member](typename interface::any_type& entry){
-			entry = make_any<T>(member);
-		}
-	),
-	m_write(writeFunc)
-	{}
 
 	template<typename T>
 	PropertyTemplate(string_type name, const T& constMember) : m_name(name),
@@ -286,11 +297,11 @@ public: // member functions
 	PropertyTemplate(string_type name, T& member) : m_name(name), 
 	m_read(
 		[&member](typename interface::any_type& entry){
-			entry = make_any<T>(member);
+			entry = make_any<const T&>(member);
 		}
 	), 
 	m_write(
-		[&member](const typename interface::any_type& entry){
+		[&member](typename interface::any_type& entry){
 			member = cast_any<T>(entry);
 		}
 	) 
@@ -313,7 +324,7 @@ public: // member functions
 	 * 
 	 * @param entry const refference to any_type variable.
 	 **/
-	void write(const any_type& entry) const{m_write(entry);}
+	void write(any_type& entry) const{m_write(entry);}
 	/**
 	 * Checks if read functor was provided.
 	 * 
