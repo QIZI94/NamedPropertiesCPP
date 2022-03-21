@@ -4,11 +4,11 @@
 #include "../property.hpp"
 
 #define PROPERTIES(...) \
-void propertiesFunc(const unip::Property::Visitor& visitor){\
-using namespace unip;\
+void propertiesFunc(const nap::Property::Visitor& visitor){\
+using namespace nap;\
 Property::Visitor::visit(visitor,{__VA_ARGS__});}\
-void propertiesFuncConst(const unip::Property::Visitor& visitor) const{\
-using namespace unip;\
+void propertiesFuncConst(const nap::Property::Visitor& visitor) const{\
+using namespace nap;\
 Property::Visitor::visit(visitor,{__VA_ARGS__});}
 
 using Range = std::pair<long long, long long>;
@@ -64,10 +64,10 @@ int main(){
     
     SimpleClass simpleClass;
 
-    unip::Property::Visitor readingVisitor(
-        [](const unip::Property& property){
-        using namespace unip;
-        using any_t = unip::Property::any_type;
+    nap::Property::Visitor readingVisitor(
+        [](const nap::Property& property){
+        using namespace nap;
+        using any_t = nap::Property::any_type;
         if(property.isNameOnly()){
             std::cout<<"[Category] "<<property.name()<<":\n";
             return true;
@@ -81,10 +81,10 @@ int main(){
         property.read(v);
         const any_t& value = v;
 
-        unip::Property::string_type propName = property.name();
+        nap::Property::string_type propName = property.name();
 
         if(Property::is_any<char>(value)){
-            std::cout<<"\tValue["<<propName<<"]: "<<unip::Property::cast_any<char>(value)<<'\n';
+            std::cout<<"\tValue["<<propName<<"]: "<<nap::Property::cast_any<char>(value)<<'\n';
         }
         else if(Property::is_any<short>(value)){
             std::cout<<"\tValue["<<propName<<"]: "<<std::hex<<"0x"<<Property::cast_any<short>(value)<<'\n';
@@ -109,9 +109,9 @@ int main(){
     });
 
 
-    unip::Property::Visitor writingVisitor(
-        [](const unip::Property& property){
-        using namespace unip;
+    nap::Property::Visitor writingVisitor(
+        [](const nap::Property& property){
+        using namespace nap;
         using any_t = Property::any_type;
 
         if(property.isNameOnly()){

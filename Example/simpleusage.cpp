@@ -6,17 +6,17 @@
 #include "../property.hpp"
 
 #define PROPERTIES(...) \
-void propertiesFunc(const unip::Property::Visitor& visitor){\
-using namespace unip;\
+void propertiesFunc(const nap::Property::Visitor& visitor){\
+using namespace nap;\
 Property::Visitor::visit(visitor,{__VA_ARGS__});}\
-void propertiesFuncConst(const unip::Property::Visitor& visitor) const{\
-using namespace unip;\
+void propertiesFuncConst(const nap::Property::Visitor& visitor) const{\
+using namespace nap;\
 Property::Visitor::visit(visitor,{__VA_ARGS__});}
 
 
 
-void PropertyToString(const unip::Property& property, std::string& output){
-	using namespace unip;
+void PropertyToString(const nap::Property& property, std::string& output){
+	using namespace nap;
 	Property::string_type propName = property.name();
 	output.append(propName);
 
@@ -45,8 +45,8 @@ void PropertyToString(const unip::Property& property, std::string& output){
 	output.append(", ");
 }
 
-bool SerializeFromString(const unip::Property& property, std::string_view& input){
-	using namespace unip;
+bool SerializeFromString(const nap::Property& property, std::string_view& input){
+	using namespace nap;
 	auto itCurrent = input.begin();
 	auto itEnd = input.end();
 
@@ -69,7 +69,7 @@ bool SerializeFromString(const unip::Property& property, std::string_view& input
 
 		std::string s_value(itCurrent, itComa);
 
-		unip::Property::any_type value;
+		nap::Property::any_type value;
 		property.read(value);
 
 		if(Property::is_any<int>(value)){
@@ -115,8 +115,8 @@ class Point{
 	void serialize(std::string& fileBuf, bool reading){
 		if(reading){
 			std::string_view entries = fileBuf;
-			unip::Property::Visitor serializationVisitor(
-				[&entries](const unip::Property& property){
+			nap::Property::Visitor serializationVisitor(
+				[&entries](const nap::Property& property){
 					return SerializeFromString(property, entries);
 				}
 			);
@@ -130,8 +130,8 @@ class Point{
 
 	std::string toString() const{
 		std::string ret;
-		unip::Property::Visitor toStringVisitor(
-			[&ret](const unip::Property& property){
+		nap::Property::Visitor toStringVisitor(
+			[&ret](const nap::Property& property){
 				PropertyToString(property, ret);
 				return true;
 			}
@@ -159,8 +159,8 @@ class Pointf{
 
 	void serialize(std::string& fileBuf, bool reading){
 		std::string_view entries = fileBuf;
-		unip::Property::Visitor serializationVisitor(
-			[&entries](const unip::Property& property){
+		nap::Property::Visitor serializationVisitor(
+			[&entries](const nap::Property& property){
 				return SerializeFromString(property, entries);
 			}
 		);
@@ -169,8 +169,8 @@ class Pointf{
 
 	std::string toString() const{
 		std::string ret;
-		unip::Property::Visitor toStringVisitor(
-			[&ret](const unip::Property& property){
+		nap::Property::Visitor toStringVisitor(
+			[&ret](const nap::Property& property){
 				PropertyToString(property, ret);
 				return true;
 			}

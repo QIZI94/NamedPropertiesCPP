@@ -26,8 +26,8 @@
 #include <any>
 #include <string_view>
 #include <array>
-/** Universal property */
-namespace unip{
+/** Named property */
+namespace nap{
 
 namespace detail{
 
