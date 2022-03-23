@@ -3,7 +3,7 @@
 #include <utility>
 
 
-#include "../property.hpp"
+#include "../defaultproperty.hpp"
 
 #define PROPERTIES(...) \
 void propertiesFunc(const nap::Property::Visitor& visitor){\

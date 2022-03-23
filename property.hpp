@@ -23,9 +23,7 @@
 #pragma once
 
 #include <functional>
-#include <any>
-#include <string_view>
-#include <array>
+
 /** Named property */
 namespace nap{
 
@@ -38,86 +36,7 @@ template <typename... Args>
 struct are_const{
   static constexpr bool value {(is_const<Args> || ...)};
 };
-
-/**
- * Default implementation of interface which uses C++17 std::any
- *  and tries to use references for objects which sizes are greater than a pointer,
- *  taking advantage of small object optimization of std::any.
- **/
-struct DefaultInterface{
-	using any_type          = std::any;
-	using string_type       = std::string_view;
-	using string_type_ref   = std::string_view;
-	template<typename T>
-	static any_type make_any(const T& value){
-		using type = std::remove_reference_t<T>;
-		if constexpr(sizeof(type) > sizeof(void*)){
-			
-			return std::make_any<const type*>(&value);
-		}
-		else{
-			return std::make_any<T>(value);
-		}
-	}
-	template<typename T>
-	static any_type make_any(T& value){
-		using type = std::remove_reference_t<T>;
-		if constexpr(sizeof(type) > sizeof(void*)){
-			
-			return std::make_any<type*>(&value);
-		}
-		else{
-			return std::make_any<T>(value);
-		}
-	}
-
-	template<typename T>
-	static auto cast_any(const any_type& any){
-		using type = std::remove_reference_t<T>;
-		if constexpr(sizeof(T) > sizeof(void*)){
-			return *std::any_cast<const type*>(any);
-		}
-		else{
-			return std::any_cast<T>(any);
-		}
-	}
-	template<typename T>
-	static auto cast_any(any_type& any){
-		using type = std::remove_reference_t<T>;
-		if constexpr(sizeof(T) > sizeof(void*)){
-			return std::move(*std::any_cast<type*>(any));
-		}
-		else{
-			return std::any_cast<T>(any);
-		}
-	}
-	template<typename T>
-	static bool is_any(const any_type& any){
-		using type = std::remove_reference_t<T>;
-		if constexpr(sizeof(type) > sizeof(void*)){
-			return (any.type() == typeid(const type*));
-		}
-		else{
-			return (any.type() == typeid(type));
-		}
-	}
-	template<typename T>
-	static auto read(T& value){
-		return make_any<const T&>(value);
-	}
-	template<typename T>
-	static auto read(const T& value){
-		return make_any<T>(value);
-	}
-	template<typename T>
-	static auto write(any_type& any){
-		return cast_any<T>(any);
-	}
-
-	DefaultInterface() = delete;
-};
 }
-
 
 template<class InterfaceImpl>
 /**
@@ -204,13 +123,13 @@ public: //type definitions
 		const PropertyVisitFunc m_visitProperty;
 	};
 
-	using WriteFunction     = std::function<void(std::any& entry)>;
-	using ReadFunction      = std::function<void(std::any& entry)>;
-	
 	using interface         = InterfaceImpl;
 	using string_type       = typename interface::string_type;
 	using string_type_ref   = typename interface::string_type_ref;
 	using any_type          = typename interface::any_type;
+
+    using WriteFunction     = std::function<void(any_type& entry)>;
+	using ReadFunction      = std::function<void(any_type& entry)>;
 	
 public: // static functions
 	// wrapers
@@ -403,9 +322,4 @@ private: // members
 	const ReadFunction m_read;
 	const WriteFunction m_write;
 };
-
-/**
- * Property template with default implementation of the interface using std::any and small object optimizations.
- **/
-using Property = PropertyTemplate<detail::DefaultInterface>;
 }
