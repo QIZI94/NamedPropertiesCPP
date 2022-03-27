@@ -162,7 +162,7 @@ public: // static functions
 	 *  as an agument for interface implementation of cast_any.
 	 * @return value of interface implementation of cast_any
 	 **/
-	static auto cast_any(const any_type& any){
+	static auto& cast_any(const any_type& any){
 		return interface::template cast_any<T>(any);
 	}
 
@@ -174,7 +174,7 @@ public: // static functions
 	 *  as an agument for interface implementation of cast_any.
 	 * @return value of interface implementation of cast_any
 	 **/
-	static auto cast_any(any_type& any){
+	static auto& cast_any(any_type& any){
 		return interface::template cast_any<T>(any);
 	}
 	template<typename T>

@@ -50,18 +50,18 @@ struct DefaultInterface{
 	}
 
 	template<typename T>
-	static auto cast_any(const any_type& any){
+	static auto& cast_any(const any_type& any){
 		using type = std::remove_reference_t<T>;
-		return *std::any_cast<const type*>(any);
+		return static_cast<const type&>(*std::any_cast<const type*>(any));
 	}
 	template<typename T>
 	static auto& cast_any(any_type& any){
 		if constexpr (std::is_reference_v<T>){
 			using type = std::remove_reference_t<T>;
-			return *std::any_cast<type*>(any);
+			return static_cast<type&>(*std::any_cast<type*>(any));
 		}
 		else{
-			return *std::any_cast<const T*>(any);
+			return static_cast<const T&>(*std::any_cast<const T*>(any));
 		}
 	}
 	template<typename T>
