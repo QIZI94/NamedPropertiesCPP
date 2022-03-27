@@ -1,7 +1,7 @@
 #include <iostream>
 #include <utility>
 
-#include "../defaultproperty.hpp"
+#include "../propertydefaults.hpp"
 
 #define PROPERTIES(...) \
 void propertiesFunc(const nap::Property::Visitor& visitor){\
@@ -130,16 +130,16 @@ int main(){
         auto range = Range(-20000,30000);
 
         if(Property::is_any<char>(value)){
-            value = 'A';
+            value = Property::make_any('A');
         }
         else if(Property::is_any<short>(value)){
-            value = (short)0x4321;
+            value = Property::make_any((short)0x4321);
         }
         else if(Property::is_any<int>(value)){
-            value = (int)+1;
+            value = Property::make_any((int)+1);
         }
         else if(Property::is_any<float>(value)){
-            value = (float)3.14/2;
+            value = Property::make_any((float)3.14/2);
         }
         else if(Property::is_any<const Range>(value)){
             value = Property::make_any<Range&>(range);

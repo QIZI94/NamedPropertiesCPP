@@ -59,7 +59,7 @@ template<class InterfaceImpl>
  *   ** Interface for PropertyTemplate to use
  *   * any_type read(type)                  - used by PropertyTemplate to read type value type into any type
  *   * any_type read(const type)            - used by PropertyTemplate to read const type type value into any type
- *   * type write(any_type&)                - used by PropertyTemplate to write any type value into type value
+ *   * void write(type&, any_type&)         - used by PropertyTemplate to write any type value into type value
  *  Note: type or required type is meant as input type before its contained in any_type and when its returned from any_type
  **/
 class PropertyTemplate{
@@ -218,8 +218,8 @@ public: // static functions
 	 * @param any passes any by any_type reference.
 	 * @return value of interface implementation of write
 	 **/
-	static auto write(any_type& any){
-		return interface:: template write<T>(any);
+	static void write(T& value ,any_type& any){
+		interface:: template write<T>(value, any);
 	}
 
 	// helpers
@@ -272,7 +272,7 @@ public: // member functions
 	), 
 	m_write(
 		[&member](typename interface::any_type& entry){
-			member = write<T>(entry);
+			write<T>(member, entry);
 		}
 	) 
 	{}

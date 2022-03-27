@@ -3,7 +3,7 @@
 #include <utility>
 
 
-#include "../defaultproperty.hpp"
+#include "../propertydefaults.hpp"
 
 #define PROPERTIES(...) \
 void propertiesFunc(const nap::Property::Visitor& visitor){\
@@ -41,6 +41,7 @@ void PropertyToString(const nap::Property& property, std::string& output){
 		output.append(": ");
 		output.append(Property::cast_any<const std::string_view&>(value));
 	}
+	else output.append(": unknown");
 
 	output.append(", ");
 }
@@ -71,16 +72,15 @@ bool SerializeFromString(const nap::Property& property, std::string_view& input)
 
 		nap::Property::any_type value;
 		property.read(value);
-
+		
 		if(Property::is_any<int>(value)){
-			
 			int i = std::stoi(s_value);
-			value = i;
+			value = Property::make_any<int&>(i);
 			property.write(value);
 		}
 		else if(Property::is_any<float>(value)){
 			float f = std::stof(s_value);
-			value = f;
+			value = Property::make_any<float&>(f);
 			property.write(value);
 		}
 	   else if(Property::is_any<std::string_view>(value)){

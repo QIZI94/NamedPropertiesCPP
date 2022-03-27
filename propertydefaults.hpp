@@ -40,56 +40,34 @@ struct DefaultInterface{
 	using string_type_ref   = std::string_view;
 	template<typename T>
 	static any_type make_any(const T& value){
-		using type = std::remove_reference_t<T>;
-		if constexpr(sizeof(type) > sizeof(void*)){
-			
-			return std::make_any<const type*>(&value);
-		}
-		else{
-			return std::make_any<T>(value);
-		}
+		using type = std::remove_reference_t<T>;		
+		return std::make_any<const type*>(&value);
 	}
 	template<typename T>
 	static any_type make_any(T& value){
-		using type = std::remove_reference_t<T>;
-		if constexpr(sizeof(type) > sizeof(void*)){
-			
-			return std::make_any<type*>(&value);
-		}
-		else{
-			return std::make_any<T>(value);
-		}
+		using type = std::remove_reference_t<T>;		
+		return std::make_any<type*>(&value);
 	}
 
 	template<typename T>
 	static auto cast_any(const any_type& any){
 		using type = std::remove_reference_t<T>;
-		if constexpr(sizeof(T) > sizeof(void*)){
-			return *std::any_cast<const type*>(any);
-		}
-		else{
-			return std::any_cast<T>(any);
-		}
+		return *std::any_cast<const type*>(any);
 	}
 	template<typename T>
-	static auto cast_any(any_type& any){
-		using type = std::remove_reference_t<T>;
-		if constexpr(sizeof(T) > sizeof(void*)){
-			return std::move(*std::any_cast<type*>(any));
+	static auto& cast_any(any_type& any){
+		if constexpr (std::is_reference_v<T>){
+			using type = std::remove_reference_t<T>;
+			return *std::any_cast<type*>(any);
 		}
 		else{
-			return std::any_cast<T>(any);
+			return *std::any_cast<const T*>(any);
 		}
 	}
 	template<typename T>
 	static bool is_any(const any_type& any){
 		using type = std::remove_reference_t<T>;
-		if constexpr(sizeof(type) > sizeof(void*)){
-			return (any.type() == typeid(const type*));
-		}
-		else{
-			return (any.type() == typeid(type));
-		}
+		return (any.type() == typeid(const type*));
 	}
 	template<typename T>
 	static auto read(T& value){
@@ -100,8 +78,14 @@ struct DefaultInterface{
 		return make_any<T>(value);
 	}
 	template<typename T>
-	static auto write(any_type& any){
-		return cast_any<T>(any);
+	static void write(T& value, any_type& any){
+		try{
+			value = std::move(cast_any<T&>(any));
+			return;
+		}
+		catch(const std::bad_any_cast&){/* write by move failed */}
+		// try write by copy
+		value = cast_any<const T&>(any);
 	}
 
 	DefaultInterface() = delete;
