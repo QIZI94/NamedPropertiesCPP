@@ -67,7 +67,7 @@ struct DefaultInterface{
 	template<typename T>
 	static bool is_any(const any_type& any){
 		using type = std::remove_reference_t<T>;
-		return (any.type() == typeid(const type*));
+		return (any.type() == typeid(type*));
 	}
 	template<typename T>
 	static auto read(T& value){
