@@ -50,12 +50,6 @@ template<class InterfaceImpl>
  *   * string_type_ref 	- type which will be used for passing the name of the named property by refference.
  * 
  * To satisfy function requirement following specification needs to be defined:
- * 	 ** Interface for user to use
- *   * any_type make_any(type) 				- function which will take value and returns any_type.
- * 	 * any_type make_any(const type) 		- function which will take const value and returns any_type.
- *   * type cast_any<type>(any_type&) 		- cast value contained by any_type to required type.
- *   * type cast_any<type>(const any_type&)	- cast value contained by any_type to required const type.
- *   * bool is_any<type>(const any_type&)	- checks if required type is same as one contained in any type
  *   ** Interface for PropertyTemplate to use
  *   * any_type read(type)                  - used by PropertyTemplate to read type value type into any type
  *   * any_type read(const type)            - used by PropertyTemplate to read const type type value into any type
@@ -132,96 +126,6 @@ public: //type definitions
 	using ReadFunction      = std::function<void(any_type& entry)>;
 	
 public: // static functions
-	// wrapers
-	template<typename T>
-	/**
-	 * Wraper function which wraps interface's implementation of make_any.
-	 * 
-	 * @param value passes value to interface implementation of make_any.
-	 * @return value of interface implementation of make_any
-	 **/
-	static auto make_any(const T& value){
-		return interface::template make_any(value);
-	}
-	template<typename T>
-	/**
-	 * Wraper function which wraps interface's implementation of make_any.
-	 * 
-	 * @param value passes value to interface implementation of make_any.
-	 * @return value of interface implementation of make_any
-	 **/
-	static auto make_any(T& value){
-		return interface::template make_any(value);
-	}
-
-	template<typename T>
-	/**
-	 * Wraper function which wraps interface's implementation of cast_any.
-	 * 
-	 * @param any passes const refference to any_type parameter,
-	 *  as an agument for interface implementation of cast_any.
-	 * @return value of interface implementation of cast_any
-	 **/
-	static auto& cast_any(const any_type& any){
-		return interface::template cast_any<T>(any);
-	}
-
-	template<typename T>
-	/**
-	 * Wraper function which wraps interface's implementation of cast_any.
-	 * 
-	 * @param any passes non-const refference to any_type parameter,
-	 *  as an agument for interface implementation of cast_any.
-	 * @return value of interface implementation of cast_any
-	 **/
-	static auto& cast_any(any_type& any){
-		return interface::template cast_any<T>(any);
-	}
-	template<typename T>
-	/**
-	 * Wraper function which wraps interface's implementation of is_any.
-	 * 
-	 * @param any passes const refference to any_type parameter,
-	 *  as an agument for interface implementation of is_any.
-	 * @return true if type of T, otherwise false.
-	 **/
-	static bool is_any(const any_type& any){
-		return interface::template is_any<T>(any);
-	}
-
-	template<typename T>
-	/**
-	 * Wraper function which wraps interface's implementation of read.
-	 * 
-	 * @param value passes value by non-const reference.
-	 * @return value of interface implementation of read
-	 **/
-	static auto read(T& value){
-		return interface:: template read<T>(value);
-	}
-
-	template<typename T>
-	/**
-	 * Wraper function which wraps interface's implementation of read.
-	 * 
-	 * @param value passes value by const reference.
-	 * @return value of interface implementation of read
-	 **/
-	static auto read(const T& value){
-		return interface:: template read<T>(value);
-	}
-
-	template<typename T>
-	/**
-	 * Wraper function which wraps interface's implementation of write.
-	 * 
-	 * @param any passes any by any_type reference.
-	 * @return value of interface implementation of write
-	 **/
-	static void write(T& value ,any_type& any){
-		interface:: template write<T>(value, any);
-	}
-
 	// helpers
 	template<class Callable, class... Args>
 	/**
@@ -257,7 +161,7 @@ public: // member functions
 	PropertyTemplate(string_type name, const T& constMember) : m_name(name),
 	m_read(
 		[&constMember](typename interface::any_type& entry){
-			entry = read<T>(constMember);
+			entry = interface::template read<T>(constMember);
 		}
 	), 
 	m_write({})
@@ -267,12 +171,12 @@ public: // member functions
 	PropertyTemplate(string_type name, T& member) : m_name(name), 
 	m_read(
 		[&member](typename interface::any_type& entry){
-			entry = read<T>(member);
+			entry = interface::template read<T>(member);
 		}
 	), 
 	m_write(
 		[&member](typename interface::any_type& entry){
-			write<T>(member, entry);
+			interface::template write<T>(member, entry);
 		}
 	) 
 	{}

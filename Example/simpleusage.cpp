@@ -29,17 +29,17 @@ void PropertyToString(const nap::Property& property, std::string& output){
 	Property::any_type value;
 	property.read(value);
 
-	if(Property::is_any<int>(value)){
+	if(Property::interface::is_any<int>(value)){
 		output.append(": ");
-		output.append(std::to_string(Property::cast_any<int>(value)));
+		output.append(std::to_string(Property::interface::cast_any<int>(value)));
 	}
-	else if(Property::is_any<float>(value)){
+	else if(Property::interface::is_any<float>(value)){
 		output.append(": ");
-		output.append(std::to_string(Property::cast_any<float>(value)));
+		output.append(std::to_string(Property::interface::cast_any<float>(value)));
 	}
-	else if(Property::is_any<std::string_view>(value)){
+	else if(Property::interface::is_any<std::string_view>(value)){
 		output.append(": ");
-		output.append(Property::cast_any<const std::string_view&>(value));
+		output.append(Property::interface::cast_any<const std::string_view&>(value));
 	}
 	else output.append(": unknown");
 
@@ -73,18 +73,18 @@ bool SerializeFromString(const nap::Property& property, std::string_view& input)
 		nap::Property::any_type value;
 		property.read(value);
 		
-		if(Property::is_any<int>(value)){
+		if(Property::interface::is_any<int>(value)){
 			int i = std::stoi(s_value);
-			value = Property::make_any<int&>(i);
+			value = Property::interface::make_any<int&>(i);
 			property.write(value);
 		}
-		else if(Property::is_any<float>(value)){
+		else if(Property::interface::is_any<float>(value)){
 			float f = std::stof(s_value);
-			value = Property::make_any<float&>(f);
+			value = Property::interface::make_any<float&>(f);
 			property.write(value);
 		}
-	   else if(Property::is_any<std::string_view>(value)){
-			auto s_propVal = Property::cast_any<const std::string_view&>(value);
+	   else if(Property::interface::is_any<std::string_view>(value)){
+			auto s_propVal = Property::interface::cast_any<const std::string_view&>(value);
 			
 			if(s_propVal != s_value)
 			{

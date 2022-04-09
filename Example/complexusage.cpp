@@ -30,7 +30,7 @@ class SimpleClass{
             // write function
             [this](Property::any_type& input){
                 Property::ExecWhenNotConst([&input](SimpleClass* This){
-                        const Range& newRange = Property::cast_any<Range&>(input);
+                        Range& newRange = Property::interface::cast_any<Range&>(input);
                         This->setLimitedRange(newRange.first, newRange.second);
                     },
                    this
@@ -67,7 +67,9 @@ int main(){
     nap::Property::Visitor readingVisitor(
         [](const nap::Property& property){
         using namespace nap;
-        using any_t = nap::Property::any_type;
+        using any_t = Property::any_type;
+		using prop = Property::interface;
+
         if(property.isNameOnly()){
             std::cout<<"[Category] "<<property.name()<<":\n";
             return true;
@@ -83,24 +85,24 @@ int main(){
 
         nap::Property::string_type propName = property.name();
 
-        if(Property::is_any<char>(value)){
-            std::cout<<"\tValue["<<propName<<"]: "<<nap::Property::cast_any<char>(value)<<'\n';
+        if(prop::is_any<char>(value)){
+            std::cout<<"\tValue["<<propName<<"]: "<<prop::cast_any<char>(value)<<'\n';
         }
-        else if(Property::is_any<short>(value)){
-            std::cout<<"\tValue["<<propName<<"]: "<<std::hex<<"0x"<<Property::cast_any<short>(value)<<'\n';
+        else if(prop::is_any<short>(value)){
+            std::cout<<"\tValue["<<propName<<"]: "<<std::hex<<"0x"<<prop::cast_any<short>(value)<<'\n';
         }
-        else if(Property::is_any<int>(value)){
-            std::cout<<"\tValue["<<propName<<"]: "<<std::dec <<Property::cast_any<int>(value)<<'\n';
+        else if(prop::is_any<int>(value)){
+            std::cout<<"\tValue["<<propName<<"]: "<<std::dec <<prop::cast_any<int>(value)<<'\n';
         }
-        else if(Property::is_any<float>(value)){
-            std::cout<<"\tValue["<<propName<<"]: "<<Property::cast_any<float>(value)<<'\n';
+        else if(prop::is_any<float>(value)){
+            std::cout<<"\tValue["<<propName<<"]: "<<prop::cast_any<float>(value)<<'\n';
         }
-        else if(Property::is_any<const Range&>(value)){
-            const Range& range = Property::cast_any<const Range&>(value);
+        else if(prop::is_any<const Range&>(value)){
+            const Range& range = prop::cast_any<const Range&>(value);
             std::cout<<"\tValue["<<propName<<"]: {"<< range.first<<", "<<range.second<<"}\n";
         }
-        else if(Property::is_any<const std::string&>(value)){
-            const std::string& className = Property::cast_any<const std::string&>(value);
+        else if(prop::is_any<const std::string&>(value)){
+            const std::string& className = prop::cast_any<const std::string&>(value);
             std::cout<<"\tValue["<<propName<<"]: "<<className<<'\n';
         }
 
@@ -113,6 +115,7 @@ int main(){
         [](const nap::Property& property){
         using namespace nap;
         using any_t = Property::any_type;
+		using prop = Property::interface;
 
         if(property.isNameOnly()){
             return true;
@@ -129,25 +132,25 @@ int main(){
         
         auto range = Range(-20000,30000);
 
-        if(Property::is_any<char>(value)){
-            value = Property::make_any('A');
+        if(prop::is_any<char>(value)){
+            value = prop::make_any('A');
         }
-        else if(Property::is_any<short>(value)){
-            value = Property::make_any((short)0x4321);
+        else if(prop::is_any<short>(value)){
+            value = prop::make_any((short)0x4321);
         }
-        else if(Property::is_any<int>(value)){
-            value = Property::make_any((int)+1);
+        else if(prop::is_any<int>(value)){
+            value = prop::make_any((int)+1);
         }
-        else if(Property::is_any<float>(value)){
-            value = Property::make_any((float)3.14/2);
+        else if(prop::is_any<float>(value)){
+            value = prop::make_any((float)3.14/2);
         }
-        else if(Property::is_any<const Range>(value)){
-            value = Property::make_any<Range&>(range);
+        else if(prop::is_any<const Range>(value)){
+            value = prop::make_any<Range>(range);
         }
-        else if(Property::is_any<std::string>(value)){
-            const std::string& className = Property::cast_any<const std::string&>(value);
+        else if(prop::is_any<std::string>(value)){
+            const std::string& className = prop::cast_any<const std::string&>(value);
             auto newVal = std::string("Changed ")+className;            
-            value = Property::make_any<std::string&>(newVal);       
+            value = prop::make_any<std::string>(newVal);       
             property.write(value);
             return true;
         }
