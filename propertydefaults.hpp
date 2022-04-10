@@ -38,6 +38,8 @@ struct DefaultInterface{
 	using any_type          = std::any;
 	using string_type       = std::string_view;
 	using string_type_ref   = std::string_view;
+	template<typename T>
+	using internal_type 	= typename std::remove_pointer<typename std::remove_reference<T>::type>::type*;
 	
 	template<typename T>
 	static any_type make_any(T& value){
@@ -53,26 +55,25 @@ struct DefaultInterface{
 	template<typename T>
 	static auto& cast_any(const any_type& any){
 		using type = std::remove_reference_t<T>;
-		return static_cast<const type&>(*std::any_cast<const type*>(any));
+		return static_cast<const type&>(*std::any_cast<internal_type<const T>>(any));
 	}
 	template<typename T>
 	static auto& cast_any(any_type& any){
 		if constexpr (std::is_reference_v<T>){
 			using type = std::remove_reference_t<T>;
-			return static_cast<type&>(*std::any_cast<type*>(any));
+			return static_cast<type&>(*std::any_cast<internal_type<T>>(any));
 		}
 		else{
-			return static_cast<const T&>(*std::any_cast<const T*>(any));
+			return static_cast<const T&>(*std::any_cast<internal_type<const T>>(any));
 		}
 	}
 	template<typename T>
 	static bool is_any(const any_type& any){
 		if constexpr(std::is_reference_v<T>){
-			using type = std::remove_reference_t<T>;
-			return (any.type() == typeid(type*));
+			return (any.type() == typeid(internal_type<T>));
 		}
 		else{
-			return (any.type() == typeid(const T*));
+			return (any.type() == typeid(internal_type<const T>));
 		}
 	}
 	template<typename T>
@@ -94,19 +95,16 @@ struct DefaultInterface{
 		value = cast_any<const T&>(any);
 	}
 
-	DefaultInterface() = delete;
 
 	private:
 
 	template<typename T>
-	static any_type make_any_impl(const T& value){
-		using type = std::remove_reference_t<T>;		
-		return std::make_any<const type*>(&value);
+	static any_type make_any_impl(const T& value){		
+		return std::make_any<internal_type<const T>>(&value);
 	}
 	template<typename T>
 	static any_type make_any_impl(T& value){
-		using type = std::remove_reference_t<T>;		
-		return std::make_any<type*>(&value);
+		return std::make_any<internal_type<T>>(&value);
 	}
 };
 
