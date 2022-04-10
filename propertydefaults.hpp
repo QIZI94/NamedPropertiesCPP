@@ -38,16 +38,17 @@ struct DefaultInterface{
 	using any_type          = std::any;
 	using string_type       = std::string_view;
 	using string_type_ref   = std::string_view;
-	template<typename T>
-	static any_type make_any(const T& value){
-		using type = std::remove_reference_t<T>;		
-		return std::make_any<const type*>(&value);
-	}
+	
 	template<typename T>
 	static any_type make_any(T& value){
-		using type = std::remove_reference_t<T>;		
-		return std::make_any<type*>(&value);
+		return make_any_impl(value);
 	}
+
+	template<typename T>
+	static any_type make_any(const T& value){
+		return make_any_impl(value);
+	}
+	
 
 	template<typename T>
 	static auto& cast_any(const any_type& any){
@@ -66,8 +67,13 @@ struct DefaultInterface{
 	}
 	template<typename T>
 	static bool is_any(const any_type& any){
-		using type = std::remove_reference_t<T>;
-		return (any.type() == typeid(type*));
+		if constexpr(std::is_reference_v<T>){
+			using type = std::remove_reference_t<T>;
+			return (any.type() == typeid(type*));
+		}
+		else{
+			return (any.type() == typeid(const T*));
+		}
 	}
 	template<typename T>
 	static auto read(T& value){
@@ -89,6 +95,19 @@ struct DefaultInterface{
 	}
 
 	DefaultInterface() = delete;
+
+	private:
+
+	template<typename T>
+	static any_type make_any_impl(const T& value){
+		using type = std::remove_reference_t<T>;		
+		return std::make_any<const type*>(&value);
+	}
+	template<typename T>
+	static any_type make_any_impl(T& value){
+		using type = std::remove_reference_t<T>;		
+		return std::make_any<type*>(&value);
+	}
 };
 
 }

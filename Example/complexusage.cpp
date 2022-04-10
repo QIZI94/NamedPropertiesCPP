@@ -145,12 +145,12 @@ int main(){
             value = prop::make_any((float)3.14/2);
         }
         else if(prop::is_any<const Range>(value)){
-            value = prop::make_any<Range>(range);
+            value = prop::make_any<Range&>(range);
         }
-        else if(prop::is_any<std::string>(value)){
+        else if(prop::is_any<const std::string>(value)){
             const std::string& className = prop::cast_any<const std::string&>(value);
             auto newVal = std::string("Changed ")+className;            
-            value = prop::make_any<std::string>(newVal);       
+            value = prop::make_any<std::string&>(newVal);       
             property.write(value);
             return true;
         }
